@@ -1,68 +1,26 @@
-function createRequest(requestBodyString, requestSourceString = "", callback, uploadInfoIsNeed = false) {
-    let XMLH = new XMLHttpRequest();
-    XMLH.open("POST", "https://jscp-diplom.netoserver.ru/");
-    XMLH.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-    XMLH.send(requestBodyString);
+function getRequest(body, callback) {
+	return new Promise((resolve, reject) => {
+		let xhr = new XMLHttpRequest();
 
-    if (uploadInfoIsNeed) {
-        XMLH.upload.onprogress = function (event) {
-            console.log(`Sending data... ${event.loaded} of ${event.total} bytes`);
-        };
+		xhr.open("POST", "https://jscp-diplom.netoserver.ru/", true);
+		xhr.responseType = "json";
+		xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+		xhr.send(body);
 
-        XMLH.upload.onerror = function () {
-            console.log("data error");
-        };
-    }
+		xhr.onload = () => {
+			if (xhr.status >= 200 && xhr.status < 300) {
+				const response = xhr.response;
+				if (callback) {
+					callback(response);
+				}
+				resolve(response);
+			} else {
+				reject(xhr.statusText);
+			}
+		};
 
-    XMLH.onload = function () {
-        if (XMLH.status != 200) {
-            alert("error: " + XMLH.status);
-            return;
-        }
-
-        console.log(`${requestSourceString} - status request: ${XMLH.status} (${XMLH.statusText})`);
-        callback(XMLH.response);
-
-    };
-
-    XMLH.onerror = function () {
-        alert("request error");
-    };
-
-};
-
-function setItem(key, value) {
-    try {
-        return window.sessionStorage.setItem(key, value);
-    } catch (e) {
-        console.log(e);
-    }
-}
-
-function getItem(key) {
-    try {
-        return window.sessionStorage.getItem(key);
-    } catch (e) {
-        console.log(e);
-    }
-}
-
-function setJSON(key, value) {
-    try {
-        const jSon = JSON.stringify(value);
-
-        setItem(key, jSon);
-    } catch (e) {
-        console.error(e);
-    }
-}
-
-function getJSON(key) {
-    try {
-        const jSon = getItem(key);
-
-        return JSON.parse(jSon);
-    } catch (e) {
-        console.error(e);
-    }
+		xhr.onerror = () => {
+			reject(xhr.statusText);
+		};
+	});
 }
