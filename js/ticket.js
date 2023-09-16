@@ -1,46 +1,37 @@
-document.addEventListener("DOMContentLoaded", () => {
-    const ticketDetails = getJSON("ticket-details");
-    const ticketInfoWrapper = document.querySelector(".ticket__info-wrapper");
-    ticketInfoWrapper.innerHTML = "";
-    const textHtml = `
-    <p class="ticket__info">На фильм: <span class="ticket__details ticket__title">${ticketDetails.filmName}</span></p>
-    <p class="ticket__info">Ряд/Место: <span class="ticket__details ticket__chairs">${ticketDetails.strRowPlace}</span></p>
-    <p class="ticket__info">В зале: <span class="ticket__details ticket__hall">${ticketDetails.hallNameNumber}</span></p>
-    <p class="ticket__info">Начало сеанса: <span class="ticket__details ticket__start">${ticketDetails.seanceTime} - ${ticketDetails.seanceDay}</span></p>
+function generateTicket() {                                            
+    let selectedSeance = JSON.parse(localStorage.selectedSeance);           
 
-    <div id="qrcode" class="ticket__info-qr"></div>
+    let places = "";                                                                                                                       
+    let price = 0;                                                          
+    //через итерацию выбранных мест смотрим их тип (вип или стандарт) и стоимость
+    for (let salePlace of selectedSeance.salesPlaces) {                  
+        if (places !== "") {
+            places += ", ";
+        }
+        places += salePlace.row + "/" + salePlace.place;                      
+        price += salePlace.type === "standart" ? Number(selectedSeance.priceStandart) : Number(selectedSeance.priceVip);
+    }
 
-    <p class="ticket__hint">Покажите QR-код нашему контроллеру для подтверждения бронирования.</p>
-    <p class="ticket__hint">Приятного просмотра!</p>
-   `;
+    //обновляем содержимое элементов на странице, отображающих информацию о билете
+    document.querySelector(".ticket__title").innerHTML = selectedSeance.filmName;
+    document.querySelector(".ticket__chairs").innerHTML = places;
+    document.querySelector(".ticket__hall").innerHTML = selectedSeance.hallName;
+    document.querySelector(".ticket__start").innerHTML = selectedSeance.seanceTime;
 
-    ticketInfoWrapper.insertAdjacentHTML("beforeend", textHtml);
-    
-    const qrText = `
-    Фильм: ${ticketDetails.filmName}
-    Зал: ${ticketDetails.hallNameNumber}
-    Ряд/место: ${ticketDetails.strRowPlace}
-    Дата: ${ticketDetails.seanceDay}
-    Начало сеанса: ${ticketDetails.seanceTime}
+    let date = new Date(Number(selectedSeance.seanceTimeStamp * 1000));                                              
+    let dateStr = date.toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric" });          
+    //полная инфо о сеансе
+    let seanceInfo = `                                                                                                
+	Фильм: ${selectedSeance.filmName}
+	Зал: ${selectedSeance.hallName}
+	Ряд/Место ${places}
+	Дата: ${dateStr}
+	Начало сеанса: ${selectedSeance.seanceTime}`;
 
-    Билет действителен строго на свой сеанс
-    `;
+    //создаем QR-код
+    let qrCode = QRCreator(seanceInfo, { image: "SVG" });                       
+    qrCode.download();
+    document.querySelector(".ticket__info-qr").append(qrCode.result);
+}
 
-    const qrcode = QRCreator(qrText, {
-        mode: 4,
-        eccl: 0,
-        version: -1,
-        mask: -1,
-        image: "png",
-        modsize: 3,
-        margin: 4,
-    });
-
-    const content = (qrcode) => {
-        return qrcode.error
-            ? `недопустимые исходные данные ${qrcode.error}`
-            : qrcode.result;
-    };
-    qrcode.download();
-    document.getElementById("qrcode").append("", content(qrcode));  
-});
+document.addEventListener("DOMContentLoaded", generateTicket);    
