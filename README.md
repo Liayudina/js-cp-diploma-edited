@@ -1,10 +1,11 @@
 # Дипломное задание по курсу «JavaScript-программирование для начинающих»
 
+ - Технологии в проекте: HTML, CSS, Bootstrap, JavaScript, Git;
+
+ - Ссылка на сайт кинотеатра: https://liayudina.github.io/js-cp-diploma-edited/
+
 ## Создание «информационной системы для предварительного бронирования билетов».
 
-Технологии в проекте: HTML, CSS, Bootstrap, JavaScript, Git;
-
-Ссылка на сайт кинотеатра: https://liayudina.github.io/js-cp-diploma-edited/
 
 ### Студенту предоставляются следующие компоненты системы:
 
